@@ -1,10 +1,4 @@
-var express = require('express'),
-    exphbs  = require('express-handlebars'),
-    passport = require('passport'),
-    LocalStrategy = require('passport-local'),
-    TwitterStrategy = require('passport-twitter'),
-    GoolgeStrategy = require('passport-google'),
-    FacebookStrategy = require('passport-facebook');
+var express = require('express');
     
 const app = express();
 const PORT = process.env.PORT || 4000;

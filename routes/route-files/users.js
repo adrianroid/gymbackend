@@ -6,9 +6,9 @@ router.route('/registerUser')
     .post(userController.registerUser);
 
 router.route('/login')
-    .post(userController.registerUser);
+    .post(userController.logUserIn);
 
 router.route('/logout')
-    .post(userController.registerUser);
+    .post(userController.logUserOut);
 
 module.exports = router;

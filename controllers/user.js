@@ -1,137 +1,115 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../model/user");
+const user = require("../model/user");
+import { v4 as uuidv4 } from 'uuid';
+const SECRET = 'polosgym'
+const EXPIRES = '7d'
 module.exports = {
   async registerUser(req, res) {
-    const { username, email, password } = req.body;
+    const data = req.body;
     try {
-      let user = await User.findOne({email: email,});
-      if (user) {
+      let result = await user.findOne({ email: email });
+      if (result) {
         return res.status(200).json({
           sucess: false,
-          err: "124",
+          err: "13",
           msg: "User Already Exists",
         });
       }
 
-      user = new User({
-        username,
-        email,
-        password,
-
+      _user = new User({
+        email: data.email,
+        password: data.password,
+        fk: uuidv4(),
+        address1: data.address1,
+        paymentInfo: [{
+          card: data.card.substr(data.card.length - 4),
+          cardType: data.cardType,
+          cvv: data.cvv,
+          yyyy: data.yyyy,
+          mm: data.mm,
+        }]
       });
 
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      _user.password = await bcrypt.hash(password, salt);
 
-      await user.save();
+      await _user.save();
 
       const payload = {
         user: {
-          id: user.id,
+          email: user.email,
+          fk: user.fk
         },
       };
 
-      jwt.sign(payload, "polosgym", {expiresIn: '7d'},(err, token) => {
-
-          if (err) throw err;
-          res.status(200).json({
-            token:token,
-          });
-        }
+      jwt.sign(payload, SECRET, { expiresIn: EXPIRES}, (err, token) => {
+        if (err) throw err;
+        else res.status(200).json({ sucess: true, token: token});
+      }
       );
     } catch (err) {
       console.log(err.message);
-      res.status(500).send("Error in Saving");
+      return res.status(200).json({
+        sucess: false,
+        err: "55",
+        msg: "Error in Saving",
+      });
     }
   },
   async logUserIn(req, res) {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
     try {
-      let user = await User.findOne({email: email,});
-      if (user) {
+      let _user = await user.findOne({ email: email });
+      if (!_user) {
         return res.status(200).json({
           sucess: false,
-          err: "124",
-          msg: "User Already Exists",
+          err: "67",
+          msg: "Incorrect User Name / Password.",
         });
       }
-
-      user = new User({
-        username,
-        email,
-        password,
-
-      });
-
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-
-      await user.save();
-
-      const payload = {
-        user: {
-          id: user.id,
-        },
-      };
-
-      jwt.sign(payload, "polosgym", {expiresIn: '7d'},(err, token) => {
-
-          if (err) throw err;
-          res.status(200).json({
-            token:token,
-          });
+      else {
+        var hash = result.password;
+        if (bcrypt.compareSync(password, hash)) {
+          const payload = {
+            user: {id: user.id,}, 
+          };
+          jwt.sign(payload, SECRET, {expiresIn: EXPIRES},(err, token) => {
+              if (err) throw err;
+              res.status(200).json({
+                sucess: true,
+                token: token,
+              });
+            }
+          );
+        } else {
+          console.log("AUTHENTICATION FAILED");
+          deferred.resolve(false);
         }
-      );
+      }
     } catch (err) {
-      console.log(err.message);
-      res.status(500).send("Error in Saving");
+      return res.status(200).json({
+        sucess: false,
+        err: "100",
+        msg: "Error in Login: " + JSON.stringify(err),
+      });
     }
   },
-  async logUserOut(req, res) {
-    const { username, email, password } = req.body;
-    try {
-      let user = await User.findOne({email: email,});
-      if (user) {
-        return res.status(200).json({
+  async verifyUserToken(req, res) {
+    const { token } = req.body;
+    jwt.verify(token, SECRET, (err, decoded) =>{
+      if(decoded){
+        res.status(200).json({
+          sucess: true,
+          token: token,
+        });
+      }else {
+        res.status(200).json({
           sucess: false,
-          err: "124",
-          msg: "User Already Exists",
+          err: "109",
+          msg: "Need Auth"
         });
       }
-
-      user = new User({
-        username,
-        email,
-        password,
-
-      });
-
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-
-      await user.save();
-
-      const payload = {
-        user: {
-          id: user.id,
-        },
-      };
-
-      jwt.sign(payload, "polosgym", {expiresIn: '7d'},(err, token) => {
-
-          if (err) throw err;
-          res.status(200).json({
-            token:token,
-          });
-        }
-      );
-    } catch (err) {
-      console.log(err.message);
-      res.status(500).send("Error in Saving");
-    }
-  },
-  async VerifyUserToken(req, res) {
-
+    });
   },
 };

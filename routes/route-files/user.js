@@ -8,7 +8,7 @@ router.route('/registerUser')
 router.route('/login')
     .post(userController.logUserIn);
 
-router.route('/logout')
-    .post(userController.logUserOut);
+router.route('/verifyUserToken')
+    .post(userController.verifyUserToken);
 
 module.exports = router;

@@ -10,11 +10,11 @@ try { const MONGO = require("./db").getDB(); } catch (err) { console.log(err) }
 
 app.use(bodyParser.json());
 const allowCrossDomain = (req, res, next) => {
-  if (['GET', 'POST'].indexOf(req.method) > -1) {
+  // if (['GET', 'POST'].indexOf(req.method) > -1) {
     res.header('Access-Control-Allow-Origin', req.headers.origin);
     res.header('Access-Control-Allow-Headers', 'Accept,Authorization,Origin,X-Requested-With,Content-Type,Accept,Key');
     res.header('Access-Control-Allow-Credentials', 'true');
-  }
+  // }
   next();
 };
 app.use(allowCrossDomain);

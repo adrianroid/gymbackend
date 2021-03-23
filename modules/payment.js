@@ -30,7 +30,7 @@ module.exports = {
       .execute()
       .then((response) => {
         resolve(response);
-      })
+      }).catch((err) => reject(err) )
     })
   }
    return await ret_this();

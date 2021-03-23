@@ -21,9 +21,10 @@ const UserSchema = mongoose.Schema({
     defaultPaymentMethod: {type: Boolean,default: true},
     isDeleted:{type: Boolean,default: false },
     cvv:{ type: String },
-    yyyy:{ type: String },
-    mm:{type: String},
-    lastModified:{ type: Date, default: Date.now()}
+    expYear:{ type: String },
+    expMonth:{type: String},
+    lastModified:{ type: Date, default: Date.now()},
+    paymentToken:{type: String, required: true},
   }],
 fk:{type: String, required: true},
 });

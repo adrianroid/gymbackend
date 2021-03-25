@@ -8,6 +8,15 @@ const User = require("../model/user");
 const Invoice = require('../model/invoice');
 const EXPIRES = '7d'
 _payment = require('../modules/payment')
+const MONGO = require('../db').getDB();
+const findUser = (col, query) => {
+  return new Promise((resolve, reject) => {
+    MONGO.collection(col).findOne(query, (err, data) => {
+      if (err) reject(err)
+      else resolve(data)
+    })
+  })
+}
 module.exports = {
   async registerUser(req, res) {
     const data = req.body;
@@ -41,12 +50,12 @@ module.exports = {
       var authorization = await _payment.chargeToken({
         tk: res_token.token,
         expMonth: data.expMonth,
-        expYear: data.expYear, 
+        expYear: data.expYear,
         amount: data.amount
       });
-      
+
       //MONGO DB CREATE
-     var _user = new User({
+      var _user = new User({
         email: data.email,
         password: data.password,
         fk: fk,
@@ -67,7 +76,7 @@ module.exports = {
         user: _user._id.toString(),
         transid: authorization.transactionId,
         invoice_num: _t.toString().substr(_t.length - 6),
-        email:data.email,
+        email: data.email,
         fk: fk,
       });
       const salt = await bcrypt.genSalt(10);
@@ -76,7 +85,7 @@ module.exports = {
       await _user.save();
       await _invoice.save();
 
-      res.cookie('id', fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
+      res.cookie('session', fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
       res.status(200).json({ success: true });
 
     } catch (err) {
@@ -88,9 +97,9 @@ module.exports = {
     }
   },
   async logUserIn(req, res) {
-    const { email, password } = req.body;
+    var data = req.body;
     try {
-      let _user = await user.findOne({ email: email });
+      let _user = await findUser('users', {email: data.email})
       if (!_user) {
         return res.status(200).json({
           success: false,
@@ -100,11 +109,11 @@ module.exports = {
       }
       else {
         var hash = _user.password;
-        if (bcrypt.compareSync(password, hash)) {
+        if (bcrypt.compareSync(data.password, hash)) {
           // const payload = {
           //   user: {id: user.id,}, 
           // };
-          res.cookie('id', _user.fk, { expires: new Date(Date.now() + 9000000), httpOnly: true })
+          res.cookie('session', _user.fk, { expires: new Date(Date.now() + 9000000) })
           res.status(200).json({ success: true });
           // jwt.sign(payload, SECRET, {expiresIn: EXPIRES},(err, token) => {
           //     if (err) throw err;
@@ -115,15 +124,18 @@ module.exports = {
           //   }
           // );
         } else {
-          console.log("AUTHENTICATION FAILED");
-          deferred.resolve(false);
+          return res.status(200).json({
+            success: false,
+            err: "129",
+            msg: "Email or Password is incorrect",
+          });
         }
       }
     } catch (err) {
       return res.status(200).json({
         success: false,
-        err: "100",
-        msg: "Error in Login: " + JSON.stringify(err),
+        err: "137",
+        msg: "Error in Login: " + JSON.stringify(err.message),
       });
     }
   },

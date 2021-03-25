@@ -113,8 +113,11 @@ module.exports = {
           // const payload = {
           //   user: {id: user.id,}, 
           // };
-          res.cookie('session', _user.fk, { expires: new Date(Date.now() + 9000000) })
-          res.status(200).json({ success: true });
+          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
+          res.status(200).json({ sucess: true, 
+            email: email, 
+            active: _user.isActive,
+           });
           // jwt.sign(payload, SECRET, {expiresIn: EXPIRES},(err, token) => {
           //     if (err) throw err;
           //     res.status(200).json({

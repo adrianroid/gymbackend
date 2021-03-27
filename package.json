@@ -16,6 +16,7 @@
     "globalpayments-api": "^1.4.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.15",
+    "stripe": "^8.140.0",
     "uuid": "^8.3.2"
   }
 }

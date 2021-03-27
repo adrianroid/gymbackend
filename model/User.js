@@ -10,6 +10,7 @@ const UserSchema = mongoose.Schema({
   state:{type: String, required: true, default: "CA"},
   phone: {type: String, required: true},
   isActive:{type: Boolean, default: true},
+  paymentFailed:{type: Boolean, default: false},
   role: {type: String, default: "user"},
   company_id: {type: String, default: "1"},
   paymentInfo:[{

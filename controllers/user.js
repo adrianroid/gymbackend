@@ -113,7 +113,7 @@ module.exports = {
           // const payload = {
           //   user: {id: user.id,}, 
           // };
-          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
+          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000)})
           res.status(200).json({ sucess: true, 
             email: email, 
             active: _user.isActive,

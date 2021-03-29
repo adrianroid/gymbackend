@@ -6,8 +6,11 @@ const customer = await stripe.customers.create({
 });
 
 module.exports = {
-  createCustomer(){
-
+  createCustomer(data){
+    const {name}
+    const customer = await stripe.customers.create({
+      description: 'My First Test Customer (created for API docs)',
+    });
 
   }
 

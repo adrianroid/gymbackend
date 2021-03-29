@@ -14,8 +14,6 @@ const UserSchema = mongoose.Schema({
   role: {type: String, default: "user"},
   company_id: {type: String, default: "1"},
   paymentInfo:[{
-    accountNumber :{type: String},
-    routingNumber :{type: String},
     card: {type: String},
     cardType: {type: String},
     defaultPaymentMethod: {type: Boolean,default: true},
@@ -26,6 +24,8 @@ const UserSchema = mongoose.Schema({
     lastModified:{ type: Date, default: Date.now()},
     paymentToken:{type: String, required: true},
     postalCode:{type: String, required: true},
+    tempid:{type: String, required: true},
+    tempuid:{type: String, required: true},
   }],
 fk:{type: String, required: true},
 });

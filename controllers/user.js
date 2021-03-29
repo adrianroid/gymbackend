@@ -33,6 +33,11 @@ module.exports = {
       var fk = uuidv4();
       // PARAMS.ccexpyear = `20${PARAMS.ccexpyear}`.substr(-4);
       // PARAMS.ccexpmonth = `00${PARAMS.ccexpmonth}`.substr(-2);
+
+
+      //Verify Card
+
+      
       var res_token = await _payment.createToken({
         card_data: {
           number: data.card,
@@ -113,7 +118,7 @@ module.exports = {
           // const payload = {
           //   user: {id: user.id,}, 
           // };
-          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000)})
+          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
           res.status(200).json({ sucess: true, 
             email: email, 
             active: _user.isActive,

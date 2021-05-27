@@ -9,12 +9,26 @@ const Invoice = require('../model/invoice');
 const EXPIRES = '7d'
 _payment = require('../modules/payment')
 const MONGO = require('../db').getDB();
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('myTotalySecretKey');
 const findUser = (col, query) => {
   return new Promise((resolve, reject) => {
     MONGO.collection(col).findOne(query, (err, data) => {
       if (err) reject(err)
-      else resolve(data)
+      else resolve(data);
     })
+  })
+}
+const find = (col, query) => {
+  return new Promise((resolve, reject) => {
+    MONGO.collection(col).find(query).toArray(function(err, result) {
+      if (err) reject(err)
+      else resolve(result);
+    });
+    // MONGO.collection(col).find(query, (err, data) => {
+    //   if (err) reject(err)
+    //   else resolve(data);
+    // })
   })
 }
 module.exports = {
@@ -34,63 +48,52 @@ module.exports = {
       // PARAMS.ccexpyear = `20${PARAMS.ccexpyear}`.substr(-4);
       // PARAMS.ccexpmonth = `00${PARAMS.ccexpmonth}`.substr(-2);
 
-
-      //Verify Card
-
-      
-      var res_token = await _payment.createToken({
-        card_data: {
-          number: data.card,
-          expMonth: data.expMonth,
-          expYear: data.expYear,
-          cvn: data.cvv,
-          cardHolderName: data.cardHolderName
-        },
-        address: {
-          postalCode: data.postalCode,
-        }
-      })
-
-      //Charge Token
-      var authorization = await _payment.chargeToken({
-        tk: res_token.token,
-        expMonth: data.expMonth,
-        expYear: data.expYear,
-        amount: data.amount
-      });
-
+      const cardEncrpty = cryptr.encrypt(data.card_number);
       //MONGO DB CREATE
       var _user = new User({
         email: data.email,
         password: data.password,
         fk: fk,
         phone: data.phone,
+        first_name: data.first_name,
+        last_name: data.last_name,
         paymentInfo: [{
-          card: data.card.substr(data.card.length - 4),
+          card: cardEncrpty,
           cardType: data.cardType,
           cardHolderName: data.cardHolderName,
           cvv: data.cvv,
           expYear: data.expYear,
           expMonth: data.expMonth,
           postalCode: data.postalCode,
-          paymentToken: res_token.token // need multi-token
+          //paymentToken: res_token.token, // need multi-token
+          c_num: data.card_number
         }]
       });
+      
+      //Charge Token TODO 
+      // var authorization = await _payment.chargeToken({
+      //   tk: res_token.token,
+      //   expMonth: data.expMonth,
+      //   expYear: data.expYear,
+      //   amount: data.amount
+      // });
+
+      
       let _t = Date.now();
-      var _invoice = new Invoice({
-        user: _user._id.toString(),
-        transid: authorization.transactionId,
-        invoice_num: _t.toString().substr(_t.length - 6),
-        email: data.email,
-        fk: fk,
-      });
+      // var _invoice = new Invoice({
+      //   user: _user._id.toString(),
+      //   transid: authorization.transactionId,
+      //   invoice_num: _t.toString().substr(_t.length - 6),
+      //   email: data.email,
+      //   fk: fk,
+      // });
+
       const salt = await bcrypt.genSalt(10);
       _user.password = await bcrypt.hash(data.password, salt);
 
       await _user.save();
-      await _invoice.save();
+      // await _invoice.save();
 
-      res.cookie('session', fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
       res.status(200).json({ success: true });
 
     } catch (err) {
@@ -118,10 +121,12 @@ module.exports = {
           // const payload = {
           //   user: {id: user.id,}, 
           // };
-          res.cookie('login', _user.fk, { expires: new Date(Date.now() + 900000), httpOnly: true })
-          res.status(200).json({ sucess: true, 
-            email: email, 
+          res.cookie('session', _user.fk, { expires: new Date(Date.now() + 9000000000), httpOnly: false })
+          res.status(200).json({ success: true, 
+            email: data.email, 
             active: _user.isActive,
+            isAdmin: _user.isAdmin,
+            user: _user
            });
           // jwt.sign(payload, SECRET, {expiresIn: EXPIRES},(err, token) => {
           //     if (err) throw err;
@@ -147,4 +152,37 @@ module.exports = {
       });
     }
   },
+  async getAllUsers(req, res){
+    if(!req.cookies.session){
+      return res.status(200).json({
+        success: false,
+        err: "146",
+        msg: "No session. Please login."
+      });
+    }
+    var _users = await find('users', {isAdmin: false})
+    res.status(200).json({ 
+      success: true, 
+      items: _users
+     });
+  },
+  async getCurrUser(req, res){
+    if(!req.cookies.session){
+      return res.status(200).json({
+        success: false,
+        err: "146",
+        msg: "No session. Please login."
+      });
+    }
+
+    var _user = await findUser('users', {fk:req.cookies.session})
+    delete _user.paymentInfo;
+    delete _user._id;
+    delete _user._password
+    delete _user.isAdmin;
+    return res.status(200).json({ 
+      success: true, 
+      data: _user
+     });
+  }
 };

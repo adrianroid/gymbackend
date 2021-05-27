@@ -8,34 +8,77 @@ const {
 } = require("globalpayments-api")
 
 const config = new ServicesConfig();
-config.secretApiKey = "skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A";
+config.secretApiKey = "skapi_cert_MfJJAgB3FGIA_uuYpgoqCCiT90ApZED-IK80OUd7og";
 config.serviceUrl = "https://cert.api2.heartlandportico.com";
 
 ServicesContainer.configure(config);
 
 module.exports = {
-  createToken: async (data) => {
-    var card = new CreditCardData();
+  // createToken: async (data) => {
+  //   var card = new CreditCardData();
 
-    card = Object.assign(card, data.card_data)
+  //   card = Object.assign(card, data.card_data)
 
-    var address = new Address();
-    address.postalCode = data.address.postalCode;
+  //   var address = new Address();
+  //   address.postalCode = data.address.postalCode;
 
-    const ret_this = () => {
-      return new Promise((resolve, reject) => {
-        card.tokenize()
+  //   const ret_this = () => {
+  //     return new Promise((resolve, reject) => {
+  //       card.tokenize()
+  //         .withCurrency("USD")
+  //         .withAddress(address)
+  //         .execute()
+  //         .then((response) => {
+  //           resolve(response);
+  //         }).catch((err) => {
+            
+  //           reject(err)
+  //         })
+  //     })
+  //   }
+  //   return await ret_this();
+  // },
+  createToken(){
+    const config = new ServicesConfig();
+    config.secretApiKey = "skapi_cert_MTyMAQBiHVEAewvIzXVFcmUd2UcyBge_eCpaASUp0A";
+    config.serviceUrl = "https://cert.api2.heartlandportico.com";
+    
+    ServicesContainer.configure(config);
+    
+    const card = new CreditCardData();
+    card.number = "4111111111111111";
+    card.expMonth = "12";
+    card.expYear = "2025";
+    card.cvn = "123";
+    card.cardHolderName = "Joe Smith";
+    
+    const address = new Address();
+    address.postalCode = "12345";
+    
+    card
+      .tokenize()
+      .withCurrency("USD")
+      .withAddress(address)
+      .execute()
+      .then((response) => {
+        console.log(response);
+    
+        const token = new CreditCardData();
+        token.token = response.token;
+        token.expMonth = "12";
+        token.expYear = "2025";
+    
+        token
+          .authorize(10)
           .withCurrency("USD")
-          .withAddress(address)
           .execute()
-          .then((response) => {
-            resolve(response);
-          }).catch((err) => reject(err))
+          .then((authorization) => {
+            console.log("auth:", authorization);
+          })
+          .catch((err) => console.log(err));
       })
-    }
-    return await ret_this();
+      .catch((error) => console.log(error));
   },
-
   chargeToken: async (data) => {
 
     const token = new CreditCardData();
@@ -79,5 +122,5 @@ module.exports = {
   // .withCurrency("USD")
   // .withAddress(address)
   // .execute();
-}
+// }
 }

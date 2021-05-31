@@ -178,8 +178,9 @@ module.exports = {
     var _user = await findUser('users', {fk:req.cookies.session})
     delete _user.paymentInfo;
     delete _user._id;
-    delete _user._password
+    delete _user.password
     delete _user.isAdmin;
+    delete _user.fk
     return res.status(200).json({ 
       success: true, 
       data: _user

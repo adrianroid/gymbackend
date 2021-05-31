@@ -14,8 +14,11 @@
     "cryptr": "^6.0.2",
     "express": "^4.17.1",
     "express-validator": "^6.10.0",
+    "firebase": "^8.6.3",
+    "firebase-admin": "^9.9.0",
     "globalpayments-api": "^1.4.2",
     "jsonwebtoken": "^8.5.1",
+    "localtunnel": "^2.0.1",
     "mongoose": "^5.11.15",
     "stripe": "^8.140.0",
     "uuid": "^8.3.2"

@@ -2,7 +2,7 @@ var express = require("express");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const bodyParser = require("body-parser");
+var bodyParser = require("body-parser");
 
 const routing = require("./routes/api");
 const cookieParser = require("cookie-parser");
@@ -14,18 +14,19 @@ try {
   console.log(err);
 }
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 const allowCrossDomain = (req, res, next) => {
   // if (['GET', 'POST'].indexOf(req.method) > -1) {
   res.header("Access-Control-Allow-Origin", req.headers.origin);
-  res.header("Access-Control-Allow-Headers", "Accept,Authorization,Origin,X-Requested-With,Content-Type,Accept,Key,Bypass-Tunnel-Reminder");
+  res.header("Access-Control-Allow-Headers", "Accept,Authorization,Origin,X-Requested-With,Content-Type,Accept,Key,Bypass-Tunnel-Reminder,Content-Length");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH,OPTIONS");
   // }
   next();
 };
 app.use(allowCrossDomain);
-
+app.use(bodyParser.urlencoded({ extended: false, limit:'200000mb' }));
+app.use(bodyParser.json({limit:'200000mb' }));
 app.get("/", (req, res) => {
   res.status(200).send("Hello.");
 });
@@ -53,6 +54,7 @@ admin.initializeApp({
   ref.update({
     url: tunnel.url,
   });
+  console.log(tunnel.url)
   tunnel.on("close", async () => {
     ref.update({
       url: null,
